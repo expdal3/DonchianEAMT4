@@ -63,11 +63,11 @@ extern   int      InpNoMoreTradeWithinXMins  = 240;        // No new trade withi
 
 extern string   __ChooseTakeProfitAndStopLoss__Type   = "__TAKE-PROFIT AND STOP-LOSS SETTING___";
 
-input ENUM_OFX_TPSL_TYPE   InpTPSLType          =  TPSL_base_on_ATR; //Choose TakeProfit and StopLoss type
+input ENUM_OFX_TPSL_TYPE   InpTPSLType          =  Fixed_TPSL; //Choose TakeProfit and StopLoss type 
 //
 // For simple point based TPSL
-extern int            InpTPPoints                = 100;
-extern int            InpSLPoints                = 100;
+extern int            InpTPPoints                = 250;
+extern int            InpSLPoints                = 2500;
 extern double         InpRRratio                 = 2.5;
 
 //
@@ -78,13 +78,13 @@ extern	double			InpATRMultiplier				=	3.0;	//	ATR Multiplier
 
 //	Now some general trading info
 extern	double	InpOrderSize			            =	0.01;					//	Order size
-extern	string	InpTradeComment		            =	"Donchian EA V1";	//	Trade comment
+extern	string	InpTradeComment		            =	"Donchian";	//	Trade comment
 extern	string	InpMagic					            =	"222222";				//	Magic number
-extern	int	   InpMaxMainBuySignalTradeAllowed	=	3;				//	Max BUY trade from main Donchian signal
-extern	int	   InpMaxMainSellSignalTradeAllowed	=	3;				//	Max SELL trade from main Donchian signal
+extern	int	   InpMaxMainBuySignalTradeAllowed	=	1;				//	Max BUY trade from main Donchian signal
+extern	int	   InpMaxMainSellSignalTradeAllowed	=  1;				//	Max SELL trade from main Donchian signal
 
 extern string   __ChooseNewsFilterSettings   = "__NEWS FILTER SETTINGS__";
-extern   bool     InpIsNewsFilterEnabled       = false;             // Enable News Filter?
+extern   bool     InpIsNewsFilterEnabled       = true;             // Enable News Filter?
 extern   int      InpMinutesBeforeNews         = 60   ;             // minutes before news
 extern   int      InpMinutesAfterNews         = 60   ;              // minutes after news
 extern   ENUM_BLUES_NEWS_IMPACT      InpNewsImpactToFilter        = _HighImpact_;
@@ -98,21 +98,21 @@ extern   bool     InpShowSignalArrows              = false;       // Show Trade 
 string   __Grid__Trading   = "_____________________________";
 extern	bool		InpIsGridTradingAllowed					=	true;				//	Enable GridTrading?
 
-extern   string            InpTradingAllowedTimeRange   =  "01:30-13:35,18:00-22:59";           //Trading-allowed time, Mon-Thu
-extern   string            InpTradingAllowedTimeRangeFriday   =  "01:30-13:35,18:00-22:59";     //Trading-allowed time Friday
+extern   string            InpTradingAllowedTimeRange   =  "04:30-12:35,18:00-22:59";           //Trading-allowed time, Mon-Thu
+extern   string            InpTradingAllowedTimeRangeFriday   =  "04:30-12:30";     //Trading-allowed time Friday
 //		and lot sizes
-extern   int		         InpLevelPoints			=	200;						//	Trade gap in points
+extern   int		         InpLevelPoints			=	225;						//	Trade gap in points
 //extern   int               InpMaxTrades          =  30;             //Max number of trades allowed
 
 extern ENUM_BLUES_TRADE_MODES    InpTradeMode            = Buy_and_Sell;   // TradeMode  
-extern double              InpMinProfit            = 100.00;           // GridTakeProfit ($))
-extern double              InpMinProfitRescue      = 1.00;           // GridTakeProfit during recovery mode
+extern double              InpMinProfit            = 5.0;           // Grid ($) TakeProfit 
+extern double              InpMinProfitRescue      = 2.0;           // Grid ($) TakeProfit during recovery mode
 extern int                 InpGridLevelRescue      = 3;           // GridLevel to start recovery mode
-extern double              InpMaxLoss              = -200.00;           // GridStopLoss ($)
+extern double              InpMaxLoss              = -10000.00;           // Grid ($) StopLoss
 
 //	Now some general trading info
 //extern   double	         InpOrderSize			   =	0.01;					//	Order size
-extern   double            InpFactor               =  1.5;               //LotSize Multiplier
+extern   double            InpFactor               =  2;               //LotSize Multiplier
 extern   int               InpLevelToStartAveraging =  3;               //LevelToStart Averaging
 extern   ENUM_BLUES_GRID_TRAILORDERSIZE_OPT               InpTrailOrderSizeOption =  _multiply_factor_;               //Next OrderSize Calc approach
 
