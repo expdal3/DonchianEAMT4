@@ -39,14 +39,14 @@
 #ifdef DONCHIAN_VERSION_1_21
 
 #ifdef __MQL4__
-//#include "include_mql4/include.mqh"
-#define extern extern
+   //#include "include_mql4/include.mqh"
+   #define extern extern
 #endif
 
 
 #ifdef __MQL5__
-//#include "include_mql5/include.mqh"
-#define extern input
+   //#include "include_mql5/include.mqh"
+   #define extern input
 #endif
 
 //
