@@ -1,6 +1,7 @@
+#define MVersion "1.25"
 /*
 
-	Ichimoku v1.mq4
+	Donchian BlueSwift.mq4
 	Copyright 2022, Orchard Forex
 	https://www.orchardforex.com
 
@@ -27,10 +28,9 @@
 
  **/
 
-#property copyright "Copyright 2022, Orchard Forex"
-#property link      "https://www.orchardforex.com"
-#property version   "1.00"
+#property copyright "Copyright 2022, BluesAlgo"
+#property link      "https://www.mql5.com"
+#property version   MVersion
 #property strict
 
-#include "Ichimoku v1.mqh"
-
+#include "DonchianEA.mqh"
