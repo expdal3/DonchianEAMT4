@@ -1,8 +1,8 @@
 /*
 
-	Ichimoku v1.mqh
-	Copyright 2022, Orchard Forex
-	https://www.orchardforex.com
+	Donchian BlueSwift.mqh
+	Copyright 2022, BluesAlgo
+	https://www.mql5.com
 
 */
 
@@ -63,11 +63,11 @@ extern   int      InpNoMoreTradeWithinXMins  = 240;        // No new trade withi
 
 extern string   __ChooseTakeProfitAndStopLoss__Type   = "__TAKE-PROFIT AND STOP-LOSS SETTING___";
 
-input ENUM_OFX_TPSL_TYPE   InpTPSLType          =  Fixed_TPSL; //Choose TakeProfit and StopLoss type 
+input ENUM_OFX_TPSL_TYPE   InpTPSLType          =  Fixed_TPSL; //Choose TakeProfit and StopLoss type
 //
 // For simple point based TPSL
 extern int            InpTPPoints                = 250;
-extern int            InpSLPoints                = 2500;
+extern int            InpSLPoints                = 2000;
 extern double         InpRRratio                 = 2.5;
 
 //
@@ -80,8 +80,8 @@ extern	double			InpATRMultiplier				=	3.0;	//	ATR Multiplier
 extern	double	InpOrderSize			            =	0.01;					//	Order size
 extern	string	InpTradeComment		            =	"Donchian";	//	Trade comment
 extern	string	InpMagic					            =	"222222";				//	Magic number
-extern	int	   InpMaxMainBuySignalTradeAllowed	=	1;				//	Max BUY trade from main Donchian signal
-extern	int	   InpMaxMainSellSignalTradeAllowed	=  1;				//	Max SELL trade from main Donchian signal
+extern	int	   InpMaxMainBuySignalTradeAllowed	=	3;				//	Max BUY trade from main Donchian signal
+extern	int	   InpMaxMainSellSignalTradeAllowed	=	3;				//	Max SELL trade from main Donchian signal
 
 extern string   __ChooseNewsFilterSettings   = "__NEWS FILTER SETTINGS__";
 extern   bool     InpIsNewsFilterEnabled       = true;             // Enable News Filter?
@@ -105,8 +105,8 @@ extern   int		         InpLevelPoints			=	225;						//	Trade gap in points
 //extern   int               InpMaxTrades          =  30;             //Max number of trades allowed
 
 extern ENUM_BLUES_TRADE_MODES    InpTradeMode            = Buy_and_Sell;   // TradeMode  
-extern double              InpMinProfit            = 5.0;           // Grid ($) TakeProfit 
-extern double              InpMinProfitRescue      = 2.0;           // Grid ($) TakeProfit during recovery mode
+extern double              InpMinProfit            = 5.00;           // Grid ($) TakeProfit 
+extern double              InpMinProfitRescue      = 2;           // Grid ($) TakeProfit during recovery mode
 extern int                 InpGridLevelRescue      = 3;           // GridLevel to start recovery mode
 extern double              InpMaxLoss              = -10000.00;           // Grid ($) StopLoss
 
@@ -125,11 +125,12 @@ extern	bool		         InpGridEADebug			   =	false;				//	EA Debug Mode
 
 #include "../ExpertCollection.mqh"
 #define CExpertCollection CExpertDonchianCollection
+#define CGridRescueCollection CGridCollection
 
 CExpertCollection*	   DonchianExpert;            // module to place signal order base on Donchian channel trade logic
 CExpertGridCollection*	GridExpert;                // module to place subsequent grid order base on signal order - if Grid Trading is enabled
-CGridCollection   *     BuyGridCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders)    
-CGridCollection   *     SellGridCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders) 
+CGridRescueCollection   *     BuyGridRescueCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders)    
+CGridRescueCollection   *     SellGridRescueCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders) 
 
 int OnInit() {
    Print("EA version: ",MVersion);
@@ -147,28 +148,28 @@ int OnInit() {
 	                                       
    //---
    
-	GridExpert = new CExpertGridCollection(inpSymbols, "", InpMagic
+	GridExpert = new CExpertGridCollection(inpSymbols, InpSymbolSuffix, InpMagic
                                             ,InpTradingAllowedTimeRange, InpTradingAllowedTimeRangeFriday, InpTrailOrderSizeOption, InpFactor,InpMinProfit, InpMinProfitRescue, InpGridLevelRescue
                                             , InpMaxLoss, InpLevelPoints, inpLevelToStartAveraging, InpOrderSize, InpGridEATradeComment, InpTradeMode, true, InpGridEADebug);
 
 	// instantiate and setup GridRescue Expert
 	//
    // manage all BUY grids
-   BuyGridCollection = new CGridCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_BUY,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment, InpRescueAllowed
+   BuyGridRescueCollection = new CGridRescueCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_BUY,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment, InpRescueAllowed
                                           ,InpPanicCloseOrderCount,InpPanicCloseMaxDrawdown,InpPanicCloseMaxLotSize,InpPanicCloseProfitToClose,InpPanicClosePosOfSecondOrder,InpStopPanicAfterNClose
                                           ,InpPanicCloseIsDriftProfitAfterEachIteration,InpPanicCloseDriftProfitStep,InpPanicCloseDriftLimit, InpPanicCloseBottomOrderIfBetter, InpPanicCloseAllowed
                                           ,InpCritCloseIfPanicOf,InpCritCloseTimeRange,InpCritCloseMaxOpenMinute,InpCritProfitToCloseTopOrder,InpCritForceCloseAtEndTime,InpCritForceCloseIgnoreMaxDuration,InpCritCloseAllowed
                                           ,true //isonechart
                                           );
    // manage all SELL grids
-   SellGridCollection = new CGridCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_SELL,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment, InpRescueAllowed
+   SellGridRescueCollection = new CGridRescueCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_SELL,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment, InpRescueAllowed
                                           ,InpPanicCloseOrderCount,InpPanicCloseMaxDrawdown,InpPanicCloseMaxLotSize,InpPanicCloseProfitToClose,InpPanicClosePosOfSecondOrder,InpStopPanicAfterNClose
                                           ,InpPanicCloseIsDriftProfitAfterEachIteration,InpPanicCloseDriftProfitStep,InpPanicCloseDriftLimit, InpPanicCloseBottomOrderIfBetter, InpPanicCloseAllowed
                                           ,InpCritCloseIfPanicOf,InpCritCloseTimeRange,InpCritCloseMaxOpenMinute,InpCritProfitToCloseTopOrder,InpCritForceCloseAtEndTime,InpCritForceCloseIgnoreMaxDuration,InpCritCloseAllowed
                                           ,true
                                           );
-   BuyGridCollection.OnInit(DIRECTION_BUY,InpTradeComment, InpShowRescuePanel, InpRescuePanelFontSize);           //improve code readability
-   SellGridCollection.OnInit(DIRECTION_SELL,InpTradeComment, InpShowRescuePanel, InpRescuePanelFontSize);
+   BuyGridRescueCollection.OnInit(DIRECTION_BUY,InpTradeComment, InpShowRescuePanel, InpRescuePanelFontSize);           //improve code readability
+   SellGridRescueCollection.OnInit(DIRECTION_SELL,InpTradeComment, InpShowRescuePanel, InpRescuePanelFontSize);
                
    return(INIT_SUCCEEDED);
 
@@ -185,11 +186,11 @@ void OnTick() {
 
 	DonchianExpert.OnTick();
 	if(InpIsGridTradingAllowed == true) GridExpert.OnTick();
-	if(InpRescueAllowed == true)    {BuyGridCollection.OnTick(InpDebug);    SellGridCollection.OnTick(InpDebug); }
+	if(InpRescueAllowed == true)    {BuyGridRescueCollection.OnTick(InpDebug);    SellGridRescueCollection.OnTick(InpDebug); }
 	
 	if(IsNewSession(5) ){
-      if (BuyGridCollection.CountValid()>0)  BuyGridCollection.ShowCollectionOrdersOnChart();
-      if (SellGridCollection.CountValid()>0) SellGridCollection.ShowCollectionOrdersOnChart();
+      if (BuyGridRescueCollection.CountValid()>0)  BuyGridRescueCollection.ShowCollectionOrdersOnChart();
+      if (SellGridRescueCollection.CountValid()>0) SellGridRescueCollection.ShowCollectionOrdersOnChart();
    }
 	
 	return;

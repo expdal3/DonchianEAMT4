@@ -1,9 +1,9 @@
-#define MVersion "1.25"
+#define MVersion "1.27"
 /*
 
-	Donchian v1.mq5
-	Copyright 2022, Orchard Forex
-	https://www.orchardforex.com
+	Donchian BlueSwift.mq4
+	Copyright 2022, BluesAlgo
+	https://www.mql5.com
 
 */
 
@@ -28,8 +28,8 @@
 
  **/
 
-#property copyright "Copyright 2022, Orchard Forex"
-#property link      "https://www.orchardforex.com"
+#property copyright "Copyright 2022, BluesAlgo"
+#property link      "https://www.mql5.com"
 #property version   MVersion
 #property strict
 

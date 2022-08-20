@@ -2,8 +2,8 @@
 /*
 
 	Donchian BlueSwift.mq4
-	Copyright 2022, Orchard Forex
-	https://www.orchardforex.com
+	Copyright 2022, BluesAlgo
+	https://www.mql5.com
 
 */
 
