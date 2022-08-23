@@ -54,8 +54,8 @@
 //
 
 //	inputs for this Donchian expert
-extern   string   InpSymbols                 = "";        // List of Symbols
-extern   string   InpSymbolSuffix            = "";             //Broker's symbol suffix
+extern   string   InpSymbols                 = "";        // Symbols to trade (separated by comma ,)
+extern   string   InpSymbolSuffix            = "";        //Broker's symbol suffix
 extern   int      InpDonchianPeriod          = 20;        //	Bands period
 //extern   int      InpMaxTrades               = 30;       // Max number of trades allowed
 extern   ENUM_BLUES_STRATEGY_DIRECTION      InpTradeEntryStrategy = _Break_out_;
@@ -82,6 +82,7 @@ extern	string	InpTradeComment		            =	"Donchian";	//	Trade comment
 extern	string	InpMagic					            =	"222222";				//	Magic number
 extern	int	   InpMaxMainBuySignalTradeAllowed	=	3;				//	Max BUY trade from main Donchian signal
 extern	int	   InpMaxMainSellSignalTradeAllowed	=	3;				//	Max SELL trade from main Donchian signal
+extern	int	   InpPadEntryValuePoint	         =	0;				//	Points away from (-)/ closer to (+) signal entry
 
 extern string   __ChooseNewsFilterSettings   = "__NEWS FILTER SETTINGS__";
 extern   bool     InpIsNewsFilterEnabled       = true;             // Enable News Filter?
@@ -102,7 +103,7 @@ extern   string            InpTradingAllowedTimeRange   =  "04:30-12:35,18:00-22
 extern   string            InpTradingAllowedTimeRangeFriday   =  "04:30-12:30";     //Trading-allowed time Friday
 //		and lot sizes
 extern   int		         InpLevelPoints			=	225;						//	Trade gap in points
-//extern   int               InpMaxTrades          =  30;             //Max number of trades allowed
+extern   int               InpFirstRealGridLevel          =  3;            //First GridLevel to trade (Skip lower levels)
 
 extern ENUM_BLUES_TRADE_MODES    InpTradeMode            = Buy_and_Sell;   // TradeMode  
 extern double              InpMinProfit            = 5.00;           // Grid ($) TakeProfit 
@@ -127,7 +128,8 @@ extern	bool		         InpGridEADebug			   =	false;				//	EA Debug Mode
 #define CExpertCollection CExpertDonchianCollection
 #define CGridRescueCollection CGridCollection
 
-CExpertCollection*	   DonchianExpert;            // module to place signal order base on Donchian channel trade logic
+CExpertCollection*	   DonchianExpert_M15;            // module to place signal order base on Donchian channel trade logic
+CExpertCollection*	   DonchianExpert_M30;            // module to place signal order base on Donchian channel trade logic
 CExpertGridCollection*	GridExpert;                // module to place subsequent grid order base on signal order - if Grid Trading is enabled
 CGridRescueCollection   *     BuyGridRescueCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders)    
 CGridRescueCollection   *     SellGridRescueCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders) 
@@ -137,20 +139,28 @@ int OnInit() {
    string inpSymbols = (InpSymbols=="")? Symbol(): InpSymbols;     //use Chart's symbol or ListOfSymbols
    int inpLevelToStartAveraging = InpLevelToStartAveraging-1;
 	string inpGridMagicNumber = InpMagic+"00";
+	string inpTradeComment = InpTradeComment;
 	
-	DonchianExpert	=	new CExpertCollection(inpSymbols,InpSymbolSuffix,InpMagic
+	DonchianExpert_M15	=	new CExpertCollection(inpSymbols,InpSymbolSuffix,InpMagic, PERIOD_M15
 	                                       ,InpDonchianPeriod, InpTradeEntryStrategy, InpNoMoreTradeWithinXMins
 	                                       ,InpTPSLType,InpTPPoints,InpSLPoints,InpRRratio,InpATRMultiplier, InpATRPeriods              //Set TPSL parameters
-	                                       ,InpOrderSize, InpTradeComment,InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed
+	                                       ,InpOrderSize, InpTradeComment+"_M15",InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed, InpPadEntryValuePoint
 	                                       ,InpIsNewsFilterEnabled, InpMinutesBeforeNews, InpMinutesAfterNews, InpNewsImpactToFilter
 	                                       ,InpShowSignalArrows
 	                                       );
-	                                       
+	
+   //DonchianExpert_M30	=	new CExpertCollection(inpSymbols,InpSymbolSuffix,InpMagic, PERIOD_M30
+	//                                       ,InpDonchianPeriod, _Reversal_, InpNoMoreTradeWithinXMins
+	//                                       ,InpTPSLType,InpTPPoints,InpSLPoints,InpRRratio,InpATRMultiplier, InpATRPeriods              //Set TPSL parameters
+	//                                       ,InpOrderSize, InpTradeComment+"_M30",InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed
+	//                                       ,InpIsNewsFilterEnabled, InpMinutesBeforeNews, InpMinutesAfterNews, InpNewsImpactToFilter
+	//                                       ,InpShowSignalArrows
+	//                                      );                                       
    //---
    
 	GridExpert = new CExpertGridCollection(inpSymbols, InpSymbolSuffix, InpMagic
                                             ,InpTradingAllowedTimeRange, InpTradingAllowedTimeRangeFriday, InpTrailOrderSizeOption, InpFactor,InpMinProfit, InpMinProfitRescue, InpGridLevelRescue
-                                            , InpMaxLoss, InpLevelPoints, inpLevelToStartAveraging, InpOrderSize, InpGridEATradeComment, InpTradeMode, true, InpGridEADebug);
+                                            , InpMaxLoss, InpLevelPoints, inpLevelToStartAveraging, InpFirstRealGridLevel, InpOrderSize, InpGridEATradeComment, InpTradeMode, true, InpGridEADebug);
 
 	// instantiate and setup GridRescue Expert
 	//
@@ -176,15 +186,20 @@ int OnInit() {
 }
 
 void OnDeinit(const int reason) {
-   DonchianExpert.OnDeinit();
-	delete	DonchianExpert;
+   DonchianExpert_M15.OnDeinit();
+	delete	DonchianExpert_M15;
+   //DonchianExpert_M30.OnDeinit();
+	//delete	DonchianExpert_M30;
 	if(InpIsGridTradingAllowed == true) delete	GridExpert;
-	        
+	if(InpRescueAllowed == true)    {delete BuyGridRescueCollection; delete   SellGridRescueCollection; }	        
 }
 
 void OnTick() {
 
-	DonchianExpert.OnTick();
+	DonchianExpert_M15.OnTick(); 
+	
+	//DonchianExpert_M30.OnTick();
+	
 	if(InpIsGridTradingAllowed == true) GridExpert.OnTick();
 	if(InpRescueAllowed == true)    {BuyGridRescueCollection.OnTick(InpDebug);    SellGridRescueCollection.OnTick(InpDebug); }
 	
