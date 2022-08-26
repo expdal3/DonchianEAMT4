@@ -53,22 +53,28 @@
 //	Inputs
 //
 
+sinput string   __GeneralSetting__   = "__GENERAL EXPERT SETTINGS___";
 //	inputs for this Donchian expert
-extern   string   InpSymbols                 = "";        // Symbols to trade (separated by comma ,)
-extern   string   InpSymbolSuffix            = "";        //Broker's symbol suffix
-extern   int      InpDonchianPeriod          = 20;        //	Bands period
-//extern   int      InpMaxTrades               = 30;       // Max number of trades allowed
-extern   ENUM_BLUES_STRATEGY_DIRECTION      InpTradeEntryStrategy = _Break_out_;
-extern   int      InpNoMoreTradeWithinXMins  = 240;        // No new trade within X mins from last trade
+extern   string   InpSymbols                      = "";        // Symbols to trade (separated by comma ,)
+extern   string   InpSymbolSuffix                 = "";        // Broker's symbol suffix
+extern   ENUM_BLUES_STRATEGY_DIRECTION      InpTradeEntryStrategy = _Break_out_; //Trade Entry strategy
+extern   string   InpMultiTimeframeStrategyString = "";        // [*]Setup Expert on multiple timeframe
+sinput   string   __GeneralSetting__Warning1      = "[*] example syntax: \'M15:_Break_out_,M15:_Reversal_\' ";
+sinput   string   __GeneralSetting__Warning2      = "  pls test this in Tester/Demo account first as it";           
+sinput   string   __GeneralSetting__Warning3      = "  this may lead to large number of trader order being opened";
 
-extern string   __ChooseTakeProfitAndStopLoss__Type   = "__TAKE-PROFIT AND STOP-LOSS SETTING___";
+extern   int      InpDonchianPeriod               = 20;        //	Bands period
+extern   int      InpNoMoreTradeWithinXMins       = 240;        // No new trade within X mins from last trade
+
+sinput   string   __SectionSep__1            = "======================================";
+sinput string   __ChooseTakeProfitAndStopLoss__Type   = "__TAKE-PROFIT AND STOP-LOSS SETTING___";
 
 input ENUM_OFX_TPSL_TYPE   InpTPSLType          =  Fixed_TPSL; //Choose TakeProfit and StopLoss type
 //
 // For simple point based TPSL
-extern int            InpTPPoints                = 250;
-extern int            InpSLPoints                = 2000;
-extern double         InpRRratio                 = 2.5;
+extern int            InpTPPoints                = 250;        //TakeProfit (Points)
+extern int            InpSLPoints                = 2000;       //StopLoss (Points)
+extern double         InpRRratio                 = 2.5;        //R:R Ratio
 
 //
 //	For ATR based TPSL
@@ -77,20 +83,20 @@ extern	int				InpATRPeriods					=	14;	//	ATR Periods
 extern	double			InpATRMultiplier				=	3.0;	//	ATR Multiplier
 
 //	Now some general trading info
-extern	double	InpOrderSize			            =	0.01;					//	Order size
+extern	double	InpOrderSize			            =	0.01;		   //	Fixed starting order size
 extern	string	InpTradeComment		            =	"Donchian";	//	Trade comment
 extern	string	InpMagic					            =	"222222";				//	Magic number
 extern	int	   InpMaxMainBuySignalTradeAllowed	=	3;				//	Max BUY trade from main Donchian signal
 extern	int	   InpMaxMainSellSignalTradeAllowed	=	3;				//	Max SELL trade from main Donchian signal
 extern	int	   InpPadEntryValuePoint	         =	0;				//	Points away from (-)/ closer to (+) signal entry
 
-extern string   __ChooseNewsFilterSettings   = "__NEWS FILTER SETTINGS__";
+sinput string   __ChooseNewsFilterSettings   = "__NEWS FILTER SETTINGS__";
 extern   bool     InpIsNewsFilterEnabled       = true;             // Enable News Filter?
 extern   int      InpMinutesBeforeNews         = 60   ;             // minutes before news
 extern   int      InpMinutesAfterNews         = 60   ;              // minutes after news
-extern   ENUM_BLUES_NEWS_IMPACT      InpNewsImpactToFilter        = _HighImpact_;
+extern   ENUM_BLUES_NEWS_IMPACT      InpNewsImpactToFilter        = _HighImpact_;   //News Impact to filter
 
-extern string   __ChooseSignalVisual   = "__SIGNAL INDICATOR ON-CHART SETTINGS__";
+sinput string   __ChooseSignalVisual   = "__SIGNAL INDICATOR ON-CHART SETTINGS__";
 
 extern   bool     InpShowSignalArrows              = false;       // Show Trade Signal on-chart?
 
@@ -125,14 +131,24 @@ extern	bool		         InpGridEADebug			   =	false;				//	EA Debug Mode
 #include <Blues/GridRescueFunction/include.mqh>
 
 #include "../ExpertCollection.mqh"
+#include "../ExpertSystem.mqh"
+#define CExpertSystem     CExpertDonchianSystem 
 #define CExpertCollection CExpertDonchianCollection
 #define CGridRescueCollection CGridCollection
 
-CExpertCollection*	   DonchianExpert_M15;            // module to place signal order base on Donchian channel trade logic
-CExpertCollection*	   DonchianExpert_M30;            // module to place signal order base on Donchian channel trade logic
+CExpertSystem*          DonchianSystem;            // module to control a 'System' of DonchianExperts
+CExpertCollection*	   DonchianExpert;            // module to place signal order base on Donchian channel trade logic
+
 CExpertGridCollection*	GridExpert;                // module to place subsequent grid order base on signal order - if Grid Trading is enabled
 CGridRescueCollection   *     BuyGridRescueCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders)    
 CGridRescueCollection   *     SellGridRescueCollection;          // module to rescue drawdown for a Grid (include both signal order and child grid orders) 
+
+CStrategyInput*         Strategies;    
+
+//+------------------------------------------------------------------+
+//| struct to implement multiTimeframe strategy                      |
+//+------------------------------------------------------------------+
+
 
 int OnInit() {
    Print("EA version: ",MVersion);
@@ -141,23 +157,39 @@ int OnInit() {
 	string inpGridMagicNumber = InpMagic+"00";
 	string inpTradeComment = InpTradeComment;
 	
-	DonchianExpert_M15	=	new CExpertCollection(inpSymbols,InpSymbolSuffix,InpMagic, PERIOD_M15
+	//ENUM_TIMEFRAMES inpTimeframe = (InpMultiTimeframeStrategyString == "")? Period(): PERIOD_D1; 
+
+   if(InpMultiTimeframeStrategyString!=""){
+	//--- setup multi timeframe
+	// Initialize system      
+   DonchianSystem = new CExpertSystem(InpMultiTimeframeStrategyString);
+	DonchianSystem.SetCommonParameters(inpSymbols,InpSymbolSuffix,InpMagic                                                  //, PERIOD_M15
+	                                       ,InpDonchianPeriod                                                            //, InpTradeEntryStrategy
+	                                       ,InpNoMoreTradeWithinXMins
+	                                       ,InpTPSLType,InpTPPoints,InpSLPoints,InpRRratio,InpATRMultiplier, InpATRPeriods              //Set TPSL parameters
+	                                       ,InpOrderSize, InpTradeComment,InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed, InpPadEntryValuePoint
+	                                       ,InpIsNewsFilterEnabled, InpMinutesBeforeNews, InpMinutesAfterNews, InpNewsImpactToFilter
+	                                       ,InpShowSignalArrows);
+   } else {
+   //--- setup the current chart timeframe
+   #ifdef __MQL5__
+      ENUM_TIMEFRAMES _period = Period();
+   #endif 
+   
+   #ifdef __MQL4__
+      ENUM_TIMEFRAMES _period = (ENUM_TIMEFRAMES) Period();
+   #endif 
+	DonchianExpert	=	new CExpertCollection(inpSymbols,InpSymbolSuffix,InpMagic, _period
 	                                       ,InpDonchianPeriod, InpTradeEntryStrategy, InpNoMoreTradeWithinXMins
 	                                       ,InpTPSLType,InpTPPoints,InpSLPoints,InpRRratio,InpATRMultiplier, InpATRPeriods              //Set TPSL parameters
-	                                       ,InpOrderSize, InpTradeComment+"_M15",InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed, InpPadEntryValuePoint
+	                                       ,InpOrderSize, InpTradeComment,InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed, InpPadEntryValuePoint
 	                                       ,InpIsNewsFilterEnabled, InpMinutesBeforeNews, InpMinutesAfterNews, InpNewsImpactToFilter
 	                                       ,InpShowSignalArrows
 	                                       );
 	
-   //DonchianExpert_M30	=	new CExpertCollection(inpSymbols,InpSymbolSuffix,InpMagic, PERIOD_M30
-	//                                       ,InpDonchianPeriod, _Reversal_, InpNoMoreTradeWithinXMins
-	//                                       ,InpTPSLType,InpTPPoints,InpSLPoints,InpRRratio,InpATRMultiplier, InpATRPeriods              //Set TPSL parameters
-	//                                       ,InpOrderSize, InpTradeComment+"_M30",InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed
-	//                                       ,InpIsNewsFilterEnabled, InpMinutesBeforeNews, InpMinutesAfterNews, InpNewsImpactToFilter
-	//                                       ,InpShowSignalArrows
-	//                                      );                                       
-   //---
-   
+
+   }
+   // instantiate and setup GridTrading Expert
 	GridExpert = new CExpertGridCollection(inpSymbols, InpSymbolSuffix, InpMagic
                                             ,InpTradingAllowedTimeRange, InpTradingAllowedTimeRangeFriday, InpTrailOrderSizeOption, InpFactor,InpMinProfit, InpMinProfitRescue, InpGridLevelRescue
                                             , InpMaxLoss, InpLevelPoints, inpLevelToStartAveraging, InpFirstRealGridLevel, InpOrderSize, InpGridEATradeComment, InpTradeMode, true, InpGridEADebug);
@@ -180,25 +212,24 @@ int OnInit() {
                                           );
    BuyGridRescueCollection.OnInit(DIRECTION_BUY,InpTradeComment, InpShowRescuePanel, InpRescuePanelFontSize);           //improve code readability
    SellGridRescueCollection.OnInit(DIRECTION_SELL,InpTradeComment, InpShowRescuePanel, InpRescuePanelFontSize);
+
                
    return(INIT_SUCCEEDED);
 
 }
 
 void OnDeinit(const int reason) {
-   DonchianExpert_M15.OnDeinit();
-	delete	DonchianExpert_M15;
-   //DonchianExpert_M30.OnDeinit();
-	//delete	DonchianExpert_M30;
+   if(InpMultiTimeframeStrategyString!="") {DonchianSystem.OnDeinit();delete	DonchianSystem;}
+   else{ DonchianExpert.OnDeinit(); delete	DonchianExpert;}  
+   
 	if(InpIsGridTradingAllowed == true) delete	GridExpert;
 	if(InpRescueAllowed == true)    {delete BuyGridRescueCollection; delete   SellGridRescueCollection; }	        
 }
 
 void OnTick() {
 
-	DonchianExpert_M15.OnTick(); 
-	
-	//DonchianExpert_M30.OnTick();
+	if(InpMultiTimeframeStrategyString!="") DonchianSystem.OnTick(); 
+	else DonchianExpert.OnTick(); 
 	
 	if(InpIsGridTradingAllowed == true) GridExpert.OnTick();
 	if(InpRescueAllowed == true)    {BuyGridRescueCollection.OnTick(InpDebug);    SellGridRescueCollection.OnTick(InpDebug); }
