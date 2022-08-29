@@ -59,7 +59,7 @@ extern   string   InpSymbols                      = "";        // Symbols to tra
 extern   string   InpSymbolSuffix                 = "";        // Broker's symbol suffix
 extern   ENUM_BLUES_STRATEGY_DIRECTION      InpTradeEntryStrategy = _Break_out_; //Trade Entry strategy
 extern   string   InpMultiTimeframeStrategyString = "";        // [*]Setup Expert on multiple timeframe
-sinput   string   __GeneralSetting__Warning1      = "[*] example syntax: \'M15:_Break_out_,M15:_Reversal_\' ";
+sinput   string   __GeneralSetting__Warning1      = "[*] example syntax: \'M15:BreakOut,M30:Reversal\'";
 sinput   string   __GeneralSetting__Warning2      = "  pls test this in Tester/Demo account first as it";           
 sinput   string   __GeneralSetting__Warning3      = "  this may lead to large number of trader order being opened";
 
