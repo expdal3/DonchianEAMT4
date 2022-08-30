@@ -190,12 +190,15 @@ double	CIndicatorChannelDonchian::GetData(const int buffer_num,const int index) 
 	switch (buffer_num)
 	{
 	case 0:					//buffer 0 = High
+	   if(index > ArraySize(mChannelHigh)-1) return (0);
 		value = mChannelHigh[index];
 		break;
 	case 1:
+	   if(index > ArraySize(mChannelLow)-1) return (0);
 		value = mChannelLow[index];
       break;
 	case 2:
+	   if(index > ArraySize(mChannelMid)-1) return (0);
 		value = mChannelMid[index];
 		break;
 	default:

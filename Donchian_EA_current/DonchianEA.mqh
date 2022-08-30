@@ -108,19 +108,20 @@ extern	bool		InpIsGridTradingAllowed					=	true;				//	Enable GridTrading?
 extern   string            InpTradingAllowedTimeRange   =  "04:30-12:35,18:00-22:59";           //Trading-allowed time, Mon-Thu
 extern   string            InpTradingAllowedTimeRangeFriday   =  "04:30-12:30";     //Trading-allowed time Friday
 //		and lot sizes
-extern   int		         InpLevelPoints			=	225;						//	Trade gap in points
-extern   int               InpFirstRealGridLevel          =  3;            //First GridLevel to trade (Skip lower levels)
-
+extern   int		         InpLevelPoints			    =	225;						//	Trade gap in points
+extern   int               InpFirstRealGridLevel    =  3;         //First GridLevel to trade (Skip lower levels) [FirstLevel=0]
+extern   int               InpLevelToStartAveraging =  3;               //LevelToStart Averaging [FirstLevel=0]
+extern int                 InpGridLevelRescue       = 3;                 // GridLevel to start recovery mode [FirstLevel=0]
 extern ENUM_BLUES_TRADE_MODES    InpTradeMode            = Buy_and_Sell;   // TradeMode  
 extern double              InpMinProfit            = 5.00;           // Grid ($) TakeProfit 
 extern double              InpMinProfitRescue      = 2;           // Grid ($) TakeProfit during recovery mode
-extern int                 InpGridLevelRescue      = 3;           // GridLevel to start recovery mode
+
 extern double              InpMaxLoss              = -10000.00;           // Grid ($) StopLoss
 
 //	Now some general trading info
 //extern   double	         InpOrderSize			   =	0.01;					//	Order size
 extern   double            InpFactor               =  2;               //LotSize Multiplier
-extern   int               InpLevelToStartAveraging =  3;               //LevelToStart Averaging
+
 extern   ENUM_BLUES_GRID_TRAILORDERSIZE_OPT               InpTrailOrderSizeOption =  _multiply_factor_;               //Next OrderSize Calc approach
 
 extern	string	         InpGridEATradeComment	=	"Donchian_Grids";	//	Trade comment
@@ -172,6 +173,7 @@ int OnInit() {
 	                                       ,InpShowSignalArrows);
    } else {
    //--- setup the current chart timeframe
+   
    #ifdef __MQL5__
       ENUM_TIMEFRAMES _period = Period();
    #endif 
