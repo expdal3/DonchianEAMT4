@@ -1,4 +1,4 @@
-#define MVersion "2.06"
+#define MVersion "2.07"
 /*
 
 	Donchian BlueSwift.mq5

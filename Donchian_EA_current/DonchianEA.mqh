@@ -234,7 +234,10 @@ void OnTick() {
 	else DonchianExpert.OnTick(); 
 	
 	if(InpIsGridTradingAllowed == true) GridExpert.OnTick();
-	if(InpRescueAllowed == true)    {BuyGridRescueCollection.OnTick(InpDebug);    SellGridRescueCollection.OnTick(InpDebug); }
+	if(InpRescueAllowed == true)    {
+	   BuyGridRescueCollection.OnTick(InpDebug);    
+	   SellGridRescueCollection.OnTick(InpDebug); 
+	}
 	
 	if(IsNewSession(5) ){
       if (BuyGridRescueCollection.CountValid()>0)  BuyGridRescueCollection.ShowCollectionOrdersOnChart();

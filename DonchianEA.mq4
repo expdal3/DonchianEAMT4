@@ -1,7 +1,7 @@
-#define MVersion "2.06"
+#define MVersion "2.07"
 /*
 
-	Donchian BlueSwift.mq5
+	Donchian BlueSwift.mq4
 	Copyright 2022, BluesAlgo
 	https://www.mql5.com
 
