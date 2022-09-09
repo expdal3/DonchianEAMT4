@@ -168,7 +168,7 @@ int OnInit() {
 	                                       ,InpDonchianPeriod                                                            //, InpTradeEntryStrategy
 	                                       ,InpNoMoreTradeWithinXMins
 	                                       ,InpTPSLType,InpTPPoints,InpSLPoints,InpRRratio,InpATRMultiplier, InpATRPeriods              //Set TPSL parameters
-	                                       ,InpOrderSize, InpTradeComment,InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed, InpPadEntryValuePoint
+	                                       ,InpTradeComment,InpMaxMainBuySignalTradeAllowed,InpMaxMainSellSignalTradeAllowed, InpPadEntryValuePoint       //InpOrderSize
 	                                       ,InpIsNewsFilterEnabled, InpMinutesBeforeNews, InpMinutesAfterNews, InpNewsImpactToFilter
 	                                       ,InpShowSignalArrows);
    } else {
