@@ -199,14 +199,14 @@ int OnInit() {
 	// instantiate and setup GridRescue Expert
 	//
    // manage all BUY grids
-   BuyGridRescueCollection = new CGridRescueCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_BUY,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment, InpRescueAllowed
+   BuyGridRescueCollection = new CGridRescueCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_BUY,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment,false, InpRescueAllowed
                                           ,InpPanicCloseOrderCount,InpPanicCloseMaxDrawdown,InpPanicCloseMaxLotSize,InpPanicCloseProfitToClose,InpPanicClosePosOfSecondOrder,InpStopPanicAfterNClose
                                           ,InpPanicCloseIsDriftProfitAfterEachIteration,InpPanicCloseDriftProfitStep,InpPanicCloseDriftLimit, InpPanicCloseBottomOrderIfBetter, InpPanicCloseAllowed
                                           ,InpCritCloseIfPanicOf,InpCritCloseTimeRange,InpCritCloseMaxOpenMinute,InpCritProfitToCloseTopOrder,InpCritForceCloseAtEndTime,InpCritForceCloseIgnoreMaxDuration,InpCritCloseAllowed
                                           ,true //isonechart
                                           );
    // manage all SELL grids
-   SellGridRescueCollection = new CGridRescueCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_SELL,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment, InpRescueAllowed
+   SellGridRescueCollection = new CGridRescueCollection(inpSymbols,InpSymbolSuffix,inpGridMagicNumber,OP_SELL,InpLevelToStartRescue,InpRescueScheme, InpSubGridProfitToClose,InpIterationModeAndProfitToCloseStr,InpTradeComment, false , InpRescueAllowed
                                           ,InpPanicCloseOrderCount,InpPanicCloseMaxDrawdown,InpPanicCloseMaxLotSize,InpPanicCloseProfitToClose,InpPanicClosePosOfSecondOrder,InpStopPanicAfterNClose
                                           ,InpPanicCloseIsDriftProfitAfterEachIteration,InpPanicCloseDriftProfitStep,InpPanicCloseDriftLimit, InpPanicCloseBottomOrderIfBetter, InpPanicCloseAllowed
                                           ,InpCritCloseIfPanicOf,InpCritCloseTimeRange,InpCritCloseMaxOpenMinute,InpCritProfitToCloseTopOrder,InpCritForceCloseAtEndTime,InpCritForceCloseIgnoreMaxDuration,InpCritCloseAllowed
