@@ -229,7 +229,7 @@ void OnDeinit(const int reason) {
 }
 
 void OnTick() {
-
+   //PrintFormat("BLUER-132:"+__FUNCTION__+":"+__LINE__+":"+"InpMultiTimeframeStrategyString = %s", InpMultiTimeframeStrategyString);
 	if(InpMultiTimeframeStrategyString!="") DonchianSystem.OnTick(); 
 	else DonchianExpert.OnTick(); 
 	
